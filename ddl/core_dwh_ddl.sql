@@ -1,32 +1,3 @@
-# Snowflake Lab 2
-
-Link to repository: 
-
-## Task 1: AWS S3 Integration
-
-### Configuring S3 bucket
-
-### Configuring IAM Role
-
-### Uploading data to bucket
-
-### Set-up STORAGE INTEGRATION in Snowflake
-
-```sql
-CREATE STORAGE INTEGRATION s3_integration
-TYPE = EXTERNAL_STAGE
-STORAGE_PROVIDER = S3
-ENABLED = TRUE
-STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::123456789012:role/YourIAMRoleName'
-STORAGE_ALLOWED_LOCATIONS = ('s3://your-bucket-name/');
-```
-
-### External tables creation
-
-1. For preprocessed files in S3 custom file format `CSV_FORMAT` was created.
-2. Creation of external tables in `CORE_DWH` was wrapped in stored procedure `create_external_tables_in_core_dwh`.
-
-```sql
 CREATE OR REPLACE FILE FORMAT CSV_FORMAT
 TYPE = 'CSV'
 FIELD_DELIMITER = ';'
@@ -167,4 +138,3 @@ BEGIN
 END;
 
 CALL create_external_tables_in_core_dwh('');
-```
