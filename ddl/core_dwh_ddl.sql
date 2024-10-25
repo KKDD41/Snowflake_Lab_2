@@ -17,7 +17,7 @@ BEGIN
       r_name      CHAR(25),
       r_comment   VARCHAR(152)
     )
-    LOCATION = ('s3://your-bucket-name/region/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/region/')
     FILE_FORMAT = CSV_FORMAT;
     
     
@@ -29,7 +29,7 @@ BEGIN
       n_regionkey INTEGER,
       n_comment   VARCHAR(155)
     )
-    LOCATION = ('s3://your-bucket-name/nation/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/nation/')
     FILE_FORMAT = CSV_FORMAT;
     
     
@@ -44,7 +44,7 @@ BEGIN
       s_acctbal   FLOAT8,
       s_comment   VARCHAR(101)
     )
-    LOCATION = ('s3://your-bucket-name/supplier/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/supplier/')
     FILE_FORMAT = CSV_FORMAT;
     
     
@@ -61,7 +61,7 @@ BEGIN
       o_shippriority  INTEGER,
       o_comment       VARCHAR(79)
     )
-    LOCATION = ('s3://your-bucket-name/orders/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/orders/')
     FILE_FORMAT = CSV_FORMAT;
     
     
@@ -74,7 +74,7 @@ BEGIN
       ps_supplycost FLOAT8 not null,
       ps_comment    VARCHAR(199)
     )
-    LOCATION = ('s3://your-bucket-name/partsupp/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/partsupp/')
     FILE_FORMAT = CSV_FORMAT;
     
     
@@ -91,7 +91,7 @@ BEGIN
       p_retailprice INTEGER,
       p_comment     VARCHAR(23)
     )
-    LOCATION = ('s3://your-bucket-name/part/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/part/')
     FILE_FORMAT = CSV_FORMAT;
     
     
@@ -107,7 +107,7 @@ BEGIN
       c_mktsegment CHAR(10),
       c_comment    VARCHAR(117)
     )
-    LOCATION = ('s3://your-bucket-name/customer/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/customer/')
     FILE_FORMAT = CSV_FORMAT;
     
     
@@ -131,7 +131,7 @@ BEGIN
       l_shipmode      CHAR(10),
       l_comment       VARCHAR(44)
     )
-    LOCATION = ('s3://your-bucket-name/lineitem/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/lineitem/')
     FILE_FORMAT = CSV_FORMAT;
 
   RETURN 'External tables in CORE_DWH were created.';

@@ -6,19 +6,29 @@ Link to repository:
 
 ### Configuring S3 bucket
 
-### Configuring IAM Role
+Creating AWS S3 bucket with public access allowed:
+![](./screenshots/1-bucket-creation.png)
 
 ### Uploading data to bucket
+Uploading preprocessed files to appropriate bucket folders:
+![](./screenshots/2-files-upload-to-bucket.png)
+
+### Configuring IAM Role
+Creating IAM Role with full-access permission on bucket:
+![](./screenshots/3-iam-creation.png)
+![](./screenshots/4-iam-details.png)
 
 ### Set-up STORAGE INTEGRATION in Snowflake
+
+Creating `STORAGE INTEGRATION` in Snowflake using created bucket and IAM role.
 
 ```sql
 CREATE STORAGE INTEGRATION s3_integration
 TYPE = EXTERNAL_STAGE
 STORAGE_PROVIDER = S3
 ENABLED = TRUE
-STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::123456789012:role/YourIAMRoleName'
-STORAGE_ALLOWED_LOCATIONS = ('s3://your-bucket-name/');
+STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::744506933860:role/Snowflake_S3_Access_Role'
+STORAGE_ALLOWED_LOCATIONS = ('s3://snowflake-lab-advanced-bucket/');
 ```
 
 ### External tables creation
@@ -46,7 +56,7 @@ BEGIN
       r_name      CHAR(25),
       r_comment   VARCHAR(152)
     )
-    LOCATION = ('s3://your-bucket-name/region/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/region/')
     FILE_FORMAT = CSV_FORMAT;
     
     
@@ -58,7 +68,7 @@ BEGIN
       n_regionkey INTEGER,
       n_comment   VARCHAR(155)
     )
-    LOCATION = ('s3://your-bucket-name/nation/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/nation/')
     FILE_FORMAT = CSV_FORMAT;
     
     
@@ -73,7 +83,7 @@ BEGIN
       s_acctbal   FLOAT8,
       s_comment   VARCHAR(101)
     )
-    LOCATION = ('s3://your-bucket-name/supplier/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/supplier/')
     FILE_FORMAT = CSV_FORMAT;
     
     
@@ -90,7 +100,7 @@ BEGIN
       o_shippriority  INTEGER,
       o_comment       VARCHAR(79)
     )
-    LOCATION = ('s3://your-bucket-name/orders/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/orders/')
     FILE_FORMAT = CSV_FORMAT;
     
     
@@ -103,7 +113,7 @@ BEGIN
       ps_supplycost FLOAT8 not null,
       ps_comment    VARCHAR(199)
     )
-    LOCATION = ('s3://your-bucket-name/partsupp/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/partsupp/')
     FILE_FORMAT = CSV_FORMAT;
     
     
@@ -120,7 +130,7 @@ BEGIN
       p_retailprice INTEGER,
       p_comment     VARCHAR(23)
     )
-    LOCATION = ('s3://your-bucket-name/part/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/part/')
     FILE_FORMAT = CSV_FORMAT;
     
     
@@ -136,7 +146,7 @@ BEGIN
       c_mktsegment CHAR(10),
       c_comment    VARCHAR(117)
     )
-    LOCATION = ('s3://your-bucket-name/customer/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/customer/')
     FILE_FORMAT = CSV_FORMAT;
     
     
@@ -160,7 +170,7 @@ BEGIN
       l_shipmode      CHAR(10),
       l_comment       VARCHAR(44)
     )
-    LOCATION = ('s3://your-bucket-name/lineitem/')
+    LOCATION = ('s3://snowflake-lab-advanced-bucket/lineitem/')
     FILE_FORMAT = CSV_FORMAT;
 
   RETURN 'External tables in CORE_DWH were created.';
@@ -168,3 +178,5 @@ END;
 
 CALL create_external_tables_in_core_dwh('');
 ```
+
+## Task 2: 
