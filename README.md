@@ -179,4 +179,95 @@ END;
 CALL create_external_tables_in_core_dwh('');
 ```
 
-## Task 2: 
+## Task 2: Data Ingestion
+
+### Tech Tables Creation
+
+Table `INGEST`, containing SQL-commands for inserting as table-rows:
+```sql
+CREATE TABLE TECH_DBO.INGEST (
+  script_id INT AUTOINCREMENT PRIMARY KEY,
+  script_text STRING,
+  description STRING,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+);
+```
+
+Table `INGEST_LOG` for capturing details of each `INSERT` statement execution:
+```sql
+CREATE TABLE TECH_DBO.INGEST_LOG (
+  log_id INT AUTOINCREMENT PRIMARY KEY,
+  script_id INT,
+  rows_written INT,
+  rows_updated INT,
+  execution_time TIMESTAMP,
+  status STRING,
+  error_details STRING,
+  FOREIGN KEY (script_id) REFERENCES TECH_DBO.INGEST(script_id)
+);
+```
+
+### Populate Scripts
+
+### Procedure running Ingestion Scripts
+
+### Streams Creation
+
+Creating streams for all external tables in `CORE_DWH`:
+```sql
+CREATE OR REPLACE STREAM customer_stream ON EXTERNAL TABLE CORE_DWH.customer_ext INSERT_ONLY = TRUE;
+CREATE OR REPLACE STREAM lineitem_stream ON EXTERNAL TABLE CORE_DWH.lineitem_ext INSERT_ONLY = TRUE;
+CREATE OR REPLACE STREAM nation_stream ON EXTERNAL TABLE CORE_DWH.nation_ext INSERT_ONLY = TRUE;
+CREATE OR REPLACE STREAM orders_stream ON EXTERNAL TABLE CORE_DWH.order_ext INSERT_ONLY = TRUE;
+CREATE OR REPLACE STREAM part_stream ON EXTERNAL TABLE CORE_DWH.part_ext INSERT_ONLY = TRUE;
+CREATE OR REPLACE STREAM partsupp_stream ON EXTERNAL TABLE CORE_DWH.partsupp_ext INSERT_ONLY = TRUE;
+CREATE OR REPLACE STREAM region_stream ON EXTERNAL TABLE CORE_DWH.region_ext INSERT_ONLY = TRUE;
+CREATE OR REPLACE STREAM supplier_stream ON EXTERNAL TABLE CORE_DWH.supplier_ext INSERT_ONLY = TRUE;
+```
+
+### Tasks on Streams
+
+Creating 8 tasks for each stream to capture corresponding external tables changes:
+```sql
+```
+
+### Orchestration Task
+
+Procedure for executing all scripts in `INGEST` table:
+```sql
+CREATE OR REPLACE PROCEDURE process_ingest_scripts()
+RETURNS STRING
+LANGUAGE SQL
+AS
+$$
+DECLARE
+  cur CURSOR FOR SELECT script_id, script_text FROM TECH_DBO.INGEST;
+  script_record VARIANT;
+  exec_result VARIANT;
+BEGIN
+  FOR script_record IN cur DO
+    BEGIN
+      EXECUTE IMMEDIATE script_record.script_text;
+      
+      INSERT INTO TECH_DBO.INGEST_LOG(script_id, rows_written, rows_updated, execution_time, status)
+      VALUES(script_record.script_id, 100, 50, CURRENT_TIMESTAMP(), 'Success');
+    EXCEPTION
+      WHEN OTHERS THEN
+
+        INSERT INTO TECH_DBO.INGEST_LOG(script_id, execution_time, status, error_details)
+        VALUES(script_record.script_id, CURRENT_TIMESTAMP(), 'Failed', SQLERRM);
+    END;
+  END FOR;
+  RETURN 'Execution Completed';
+END;
+$$;
+```
+
+Creating chron task for orchestration ingestion tasks created above:
+```sql
+CREATE TASK run_ingestion_task
+WAREHOUSE = your_warehouse
+SCHEDULE = '5 MINUTE'
+AS
+CALL process_ingest_scripts();
+```
