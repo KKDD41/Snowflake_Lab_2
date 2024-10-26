@@ -1,6 +1,6 @@
 # Snowflake Lab 2
 
-Link to repository: 
+Link to repository: https://github.com/KKDD41/Snowflake_Lab_2.
 
 ## Task 1: AWS S3 Integration
 
@@ -207,10 +207,8 @@ CREATE TABLE TECH_DBO.INGEST_LOG (
 
 ### Populate Scripts
 
-Populating rows of table `TECH_DBO.INGEST` with scripts:
-```sql
-
-```
+Populating rows of table `TECH_DBO.INGEST` with `COPY` scripts.
+Full script is stored in `./ingestion_pipeline/populate_ingestion_table.sql`.
 
 ### Procedure running Ingestion Scripts
 

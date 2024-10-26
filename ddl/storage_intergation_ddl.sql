@@ -1,0 +1,6 @@
+CREATE STORAGE INTEGRATION s3_integration
+TYPE = EXTERNAL_STAGE
+STORAGE_PROVIDER = S3
+ENABLED = TRUE
+STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::744506933860:role/Snowflake_S3_Access_Role'
+STORAGE_ALLOWED_LOCATIONS = ('s3://snowflake-lab-advanced-bucket/');
