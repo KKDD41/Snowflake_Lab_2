@@ -187,6 +187,7 @@ Table `INGEST`, containing SQL-commands for inserting as table-rows:
 ```sql
 CREATE TABLE TECH_DBO.INGEST (
   script_id INT AUTOINCREMENT PRIMARY KEY,
+  table_to_change STRING,
   script_text STRING,
   description STRING,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
@@ -199,10 +200,7 @@ CREATE TABLE TECH_DBO.INGEST_LOG (
   log_id INT AUTOINCREMENT PRIMARY KEY,
   script_id INT,
   rows_written INT,
-  rows_updated INT,
-  execution_time TIMESTAMP,
   status STRING,
-  error_details STRING,
   FOREIGN KEY (script_id) REFERENCES TECH_DBO.INGEST(script_id)
 );
 ```
@@ -210,6 +208,56 @@ CREATE TABLE TECH_DBO.INGEST_LOG (
 ### Populate Scripts
 
 ### Procedure running Ingestion Scripts
+
+Stored procedure `execute_ingestion_script(specific_table STRING)` is used to run ingestion script stored in
+`TECH_DBO.INGESTION` table and writes log-data into `TECH_DBO.INGEST_LOG` table.
+```sql
+CREATE OR REPLACE PROCEDURE execute_ingestion_script(specific_table STRING)
+RETURNS STRING
+LANGUAGE SQL
+AS
+BEGIN
+  DECLARE script_to_execute AS STRING;
+  DECLARE script_id AS INT;
+  DECLARE rows_affected AS INT;
+  DECLARE error_message AS STRING;
+  DECLARE status_text AS STRING;
+
+  SET script_to_execute = (
+        SELECT script_text
+        FROM TECH_DBO.INGEST
+        WHERE table_to_change = specific_table
+        ORDER BY created_at DESC
+        LIMIT 1
+  );
+  SET script_id = (
+        SELECT script_id
+        FROM TECH_DBO.INGEST
+        WHERE table_to_change = specific_table
+        ORDER BY created_at DESC
+        LIMIT 1
+  );
+
+
+  IF script_to_execute IS NOT NULL THEN
+    EXECUTE IMMEDIATE script_to_execute;
+
+    SET rows_affected = SQLROWCOUNT;
+    SET status_text = 'Success';
+
+    INSERT INTO TECH_DBO.INGEST_LOG (script_id, rows_affected, status_text);
+    RETURN 'Script executed successfully.';
+  ELSE
+    SET rows_affected = 0;
+    SET status_text = 'Fail';
+
+    INSERT INTO TECH_DBO.INGEST_LOG (script_id, rows_affected, status_text);
+    RETURN 'No script found for the specified table.';
+  END IF;
+END;
+```
+
+
 
 ### Streams Creation
 
@@ -233,34 +281,9 @@ Creating 8 tasks for each stream to capture corresponding external tables change
 
 ### Orchestration Task
 
-Procedure for executing all scripts in `INGEST` table:
+Procedure for executing script in `INGEST` table, inserting rows in corresponding table:
 ```sql
-CREATE OR REPLACE PROCEDURE process_ingest_scripts()
-RETURNS STRING
-LANGUAGE SQL
-AS
-$$
-DECLARE
-  cur CURSOR FOR SELECT script_id, script_text FROM TECH_DBO.INGEST;
-  script_record VARIANT;
-  exec_result VARIANT;
-BEGIN
-  FOR script_record IN cur DO
-    BEGIN
-      EXECUTE IMMEDIATE script_record.script_text;
-      
-      INSERT INTO TECH_DBO.INGEST_LOG(script_id, rows_written, rows_updated, execution_time, status)
-      VALUES(script_record.script_id, 100, 50, CURRENT_TIMESTAMP(), 'Success');
-    EXCEPTION
-      WHEN OTHERS THEN
 
-        INSERT INTO TECH_DBO.INGEST_LOG(script_id, execution_time, status, error_details)
-        VALUES(script_record.script_id, CURRENT_TIMESTAMP(), 'Failed', SQLERRM);
-    END;
-  END FOR;
-  RETURN 'Execution Completed';
-END;
-$$;
 ```
 
 Creating chron task for orchestration ingestion tasks created above:

@@ -117,8 +117,6 @@ AS 'let v_sql_command;
       return ''Done'';
     }   
     catch (err)  {
-      ///////////////////////////////////////////////
-      // WRITE ERROR LOG
       return "SP_ETL_STG_DWH_COPY Error: " + err;
 	  //here you can also set logs variables for error
       v_ERROR_LOG = err;
