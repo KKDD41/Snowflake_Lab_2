@@ -207,6 +207,11 @@ CREATE TABLE TECH_DBO.INGEST_LOG (
 
 ### Populate Scripts
 
+Populating rows of table `TECH_DBO.INGEST` with scripts:
+```sql
+
+```
+
 ### Procedure running Ingestion Scripts
 
 Stored procedure `execute_ingestion_script(specific_table STRING)` is used to run ingestion script stored in
@@ -257,8 +262,6 @@ BEGIN
 END;
 ```
 
-
-
 ### Streams Creation
 
 Creating streams for all external tables in `CORE_DWH`:
@@ -277,13 +280,91 @@ CREATE OR REPLACE STREAM supplier_stream ON EXTERNAL TABLE CORE_DWH.supplier_ext
 
 Creating 8 tasks for each stream to capture corresponding external tables changes:
 ```sql
+CREATE OR REPLACE TASK TECH_DBO.customer_task
+  WAREHOUSE = COMPUTE_WH
+  SCHEDULE = '1 MINUTE'
+WHEN
+  SYSTEM$STREAM_HAS_DATA('CORE_DWH.customer_stream')
+AS
+  CALL execute_ingestion_script('customer');
+
+CREATE OR REPLACE TASK TECH_DBO.lineitem_task
+  WAREHOUSE = COMPUTE_WH
+  SCHEDULE = '1 MINUTE'
+WHEN
+  SYSTEM$STREAM_HAS_DATA('CORE_DWH.lineitem_stream')
+AS
+  CALL execute_ingestion_script('lineitem');
+
+CREATE OR REPLACE TASK TECH_DBO.nation_task
+  WAREHOUSE = COMPUTE_WH
+  SCHEDULE = '1 MINUTE'
+WHEN
+  SYSTEM$STREAM_HAS_DATA('CORE_DWH.nation_stream')
+AS
+  CALL execute_ingestion_script('nation');
+
+CREATE OR REPLACE TASK TECH_DBO.orders_task
+  WAREHOUSE = COMPUTE_WH
+  SCHEDULE = '1 MINUTE'
+WHEN
+  SYSTEM$STREAM_HAS_DATA('CORE_DWH.orders_stream')
+AS
+  CALL execute_ingestion_script('orders');
+
+CREATE OR REPLACE TASK TECH_DBO.part_task
+  WAREHOUSE = COMPUTE_WH
+  SCHEDULE = '1 MINUTE'
+WHEN
+  SYSTEM$STREAM_HAS_DATA('CORE_DWH.part_stream')
+AS
+  CALL execute_ingestion_script('part');
+
+CREATE OR REPLACE TASK TECH_DBO.partsupp_task
+  WAREHOUSE = COMPUTE_WH
+  SCHEDULE = '1 MINUTE'
+WHEN
+  SYSTEM$STREAM_HAS_DATA('CORE_DWH.partsupp_stream')
+AS
+  CALL execute_ingestion_script('partsupp');
+
+CREATE OR REPLACE TASK TECH_DBO.region_task
+  WAREHOUSE = COMPUTE_WH
+  SCHEDULE = '1 MINUTE'
+WHEN
+  SYSTEM$STREAM_HAS_DATA('CORE_DWH.region_stream')
+AS
+  CALL execute_ingestion_script('region');
+
+CREATE OR REPLACE TASK TECH_DBO.supplier_task
+  WAREHOUSE = COMPUTE_WH
+  SCHEDULE = '1 MINUTE'
+WHEN
+  SYSTEM$STREAM_HAS_DATA('CORE_DWH.supplier_stream')
+AS
+  CALL execute_ingestion_script('supplier');
 ```
 
 ### Orchestration Task
 
-Procedure for executing script in `INGEST` table, inserting rows in corresponding table:
+Procedure for enabling ingestion tasks, inserting rows in corresponding table:
 ```sql
-
+CREATE OR REPLACE PROCEDURE resume_ingestion_tasks()
+RETURNS VARCHAR NOT NULL
+LANGUAGE SQL
+AS
+BEGIN
+    ALTER TASK customer_task() RESUME;
+    ALTER TASK lineitem_task() RESUME;
+    ALTER TASK nation_task() RESUME;
+    ALTER TASK order_task() RESUME;
+    ALTER TASK part_task() RESUME;
+    ALTER TASK partsupp_task() RESUME;
+    ALTER TASK region_task() RESUME;
+    ALTER TASK supplier_task() RESUME;
+    
+    RETURN 'Ingestion tasks were started.'
+END;
 ```
 
 Creating chron task for orchestration ingestion tasks created above:
@@ -292,5 +373,5 @@ CREATE TASK run_ingestion_task
 WAREHOUSE = your_warehouse
 SCHEDULE = '5 MINUTE'
 AS
-CALL process_ingest_scripts();
+CALL resume_ingestion_tasks();
 ```
